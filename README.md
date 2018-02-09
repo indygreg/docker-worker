@@ -106,7 +106,7 @@ it is possible to configure a bare virtual machine in a very similar manner to
 what Vagrant would produce.
 
 1. Create a new virtual machine.
-2. Download and boot an Ubuntu 14.04 server ISO
+2. Download and boot an Ubuntu 16.04 server ISO
 3. Boot the VM
 4. Click through the Ubuntu installer dialogs
 5. For the primary username, use `vagrant`

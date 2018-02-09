@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 ENV NODE_VERSION 8.6.0
 ENV DOCKER_VERSION 17.12.0~ce-0~ubuntu

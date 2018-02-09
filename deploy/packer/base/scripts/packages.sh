@@ -30,11 +30,19 @@ sudo apt-get update -y
 
 # Add docker gpg key and update sources
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" \
+sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" \
   > /etc/apt/sources.list.d/docker.list'
 
 ## Update to pick up new registries
 sudo apt-get update -y
+
+# Force Docker to use overlay2 storage driver via systemd override.
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo tee /etc/systemd/system/docker.service.d/docker.conf > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// --storage-driver overlay2
+EOF
 
 ## Install all the packages
 sudo apt-get install -y \
@@ -46,15 +54,12 @@ sudo apt-get install -y \
     build-essential \
     git-core \
     gstreamer0.10-alsa \
-    gstreamer0.10-plugins-bad \
     gstreamer0.10-plugins-base \
     gstreamer0.10-plugins-good \
-    gstreamer0.10-plugins-ugly \
     gstreamer0.10-tools \
     pbuilder \
     python-mock \
     python-configobj \
-    python-support \
     cdbs \
     python-pip \
     jq \
@@ -83,11 +88,8 @@ sudo apt-get install -y \
 # Install AWS optimized kernel.
 sudo apt-get install -y linux-aws linux-tools-aws
 
-# Remove the virtual package for the old kernel.
-sudo apt-get remove -y linux-image-virtual linux-image-extra-virtual linux-headers-virtual
-
 # Purge leftover kernel packages.
-old_packages=$(dpkg-query -W -f'${Package}\n' linux-*-generic)
+old_packages=$(dpkg-query -W -f'${Package}\n' linux-*-generic) || true
 if [ -n "${old_packages}" ]; then
     sudo apt-get -y purge ${old_packages}
 fi

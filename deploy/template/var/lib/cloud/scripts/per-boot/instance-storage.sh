@@ -72,7 +72,10 @@ if ! df -T /dev/mapper/instance_storage-all | grep 'ext4'; then
         # changes in the background. And a `sync()` issued by an application can
         # still force a full flush sooner. But ext4 itself won't be flushing all
         # changes as often.
-        mount -o 'rw,relatime,errors=panic,data=writeback,nobarrier,commit=60' /dev/instance_storage/all /mnt
+        echo '/dev/instance_storage/all /mnt ext4 rw,relatime,errors=panic,data=writeback,nobarrier,commit=60 0 1' >> /etc/fstab
+        # Tell systemd to pick up fstab changes, which will auto mount.
+        systemctl daemon-reload
+        systemctl restart local-fs.target
     fi
 else
     echo "Logical volume 'instance_storage' is already mounted."

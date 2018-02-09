@@ -19,6 +19,7 @@ docker_worker_source=$2
 
 # install the system configuration
 sudo tar xzf $template_source -C / --strip-components=1
+sudo systemctl daemon-reload
 
 # install the node app.
 target=$HOME/docker_worker

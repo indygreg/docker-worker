@@ -1,0 +1,16 @@
+[Unit]
+Description=Docker Worker Node Service
+Requires=docker.service docker-worker-sidecar-images.service
+
+[Service]
+Type=simple
+
+Environment=META=http://169.254.169.254/latest/meta-data/' DEBUG='{{debug.level}}'
+ExecStart=/usr/local/bin/node /home/ubuntu/docker_worker/src/bin/worker.js --host aws production
+
+Restart=on-failure
+StartLimitBurst=3
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target

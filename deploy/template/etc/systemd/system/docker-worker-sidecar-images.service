@@ -1,0 +1,8 @@
+[Unit]
+Description=Load Docker images required for Docker Worker
+Requires=docker.service
+
+[Service]
+Type=oneshot
+
+ExecStart=/usr/bin/docker load -i /home/ubuntu/docker_worker/docker_worker_images.tar
