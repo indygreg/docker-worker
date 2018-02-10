@@ -13,10 +13,11 @@ sudo groupadd -f docker
 # Make sure we use add the calling user to docker
 # group. If the the script itself is called with sudo,
 # we must use SUDO_USER, otherwise, use USER.
-if [ -z "${VAGRANT_PROVISION}" ]; then
-    user=$USER
+
+if [ -n "${SUDO_USER}" ]; then
+    user=${SUDO_USER}
 else
-    user=$SUDO_USER
+    user=${USER}
 fi
 
 sudo usermod -a -G docker $user
