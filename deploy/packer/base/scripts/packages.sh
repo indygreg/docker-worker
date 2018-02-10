@@ -36,29 +36,6 @@ sudo sh -c 'echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trus
 ## Update to pick up new registries
 sudo apt-get update -y
 
-# Install AWS optimized kernel.
-sudo apt-get install -y linux-aws linux-tools-aws
-
-# Remove the virtual package for the old kernel.
-sudo apt-get remove -y linux-image-virtual linux-image-extra-virtual linux-headers-virtual
-
-# Purge leftover kernel packages.
-old_packages=$(dpkg-query -W -f'${Package}\n' linux-*-generic)
-if [ -n "${old_packages}" ]; then
-    sudo apt-get -y purge ${old_packages}
-fi
-
-sudo apt-get autoremove -y
-
-# Capture the installed kernel version so we can compile kernel modules for
-# it below.
-KERNEL_VER=$(dpkg --list | grep 'linux-image-[0-9]' | awk '{print $2}' | sed 's/linux-image-//')
-
-if [ -z "${KERNEL_VER}" ]; then
-    echo "unable to resolve installed kernel version!"
-    exit 1
-fi
-
 ## Install all the packages
 sudo apt-get install -y \
     unattended-upgrades \
@@ -86,6 +63,45 @@ sudo apt-get install -y \
     lxc \
     rng-tools \
     liblz4-tool
+
+### Kernel Management
+#
+# We install the kernel *after* packages because this creates the least
+# amount of chaos. Various package installs trigger the building/install
+# of kernel modules. And some triggers in packages may depend on those
+# modules being loaded. e.g. Docker depends on various filesystem
+# modules.
+#
+# By mucking with the kernel here, we ensure that any kernel modules
+# needed by packages above are able to insert themselves into the current
+# kernel. This is because code below may remove the current kernel. And
+# if the current kernel is not present, new modules cannot be loaded.
+# This does result in some overhead for managing kernel modules for
+# multiple kernels. But it avoids headaches from working around package
+# installs not being able to load new kernel modules.
+
+# Install AWS optimized kernel.
+sudo apt-get install -y linux-aws linux-tools-aws
+
+# Remove the virtual package for the old kernel.
+sudo apt-get remove -y linux-image-virtual linux-image-extra-virtual linux-headers-virtual
+
+# Purge leftover kernel packages.
+old_packages=$(dpkg-query -W -f'${Package}\n' linux-*-generic)
+if [ -n "${old_packages}" ]; then
+    sudo apt-get -y purge ${old_packages}
+fi
+
+sudo apt-get autoremove -y
+
+# Capture the installed kernel version so we can compile kernel modules for
+# it below.
+KERNEL_VER=$(dpkg --list | grep 'linux-image-[0-9]' | awk '{print $2}' | sed 's/linux-image-//')
+
+if [ -z "${KERNEL_VER}" ]; then
+    echo "unable to resolve installed kernel version!"
+    exit 1
+fi
 
 # Remove apport because it prevents obtaining crashes from containers
 # and because it may send data to Canonical.
