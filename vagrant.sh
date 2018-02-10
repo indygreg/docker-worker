@@ -2,6 +2,8 @@
 
 set -e -v -x
 
+export VAGRANT_PROVISION=1
+
 # Upgrade system packages first. We only do this here because in packer,
 # the base AMI should be used to define the package set. This ensures
 # that AMI generation is more deterministic.
